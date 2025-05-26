@@ -1,3 +1,4 @@
+Flask
 numpy
 pandas
 matplotlib
@@ -5,3 +6,4 @@ keras
 tensorflow
 Pillow
 ipython
+gunicorn
