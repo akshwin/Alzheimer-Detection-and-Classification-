@@ -8,7 +8,7 @@ import uuid
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-model = load_model('model/model.h5')
+model = load_model('model.h5')
 CLASS_NAMES = ['Mild Demented', 'Moderate Demented', 'Non Demented', 'Very Mild Demented']
 LAST_CONV_LAYER_NAME = 'conv3'  # Update if needed
 
