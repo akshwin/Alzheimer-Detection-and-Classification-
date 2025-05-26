@@ -10,7 +10,7 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 model = load_model('model.h5')
 CLASS_NAMES = ['Mild Demented', 'Moderate Demented', 'Non Demented', 'Very Mild Demented']
-LAST_CONV_LAYER_NAME = 'conv3'  # Update if needed
+LAST_CONV_LAYER_NAME = 'conv3'  # Make sure this layer exists in your model
 
 @app.route('/')
 def index():
@@ -39,5 +39,10 @@ def predict():
                            uploaded_image=img_path,
                            heatmap_image=heatmap_path)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# 🟡 For local development only
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
+# ✅ For Vercel (WSGI entry point)
+def handler(environ, start_response):
+    return app.wsgi_app(environ, start_response)
