@@ -39,10 +39,6 @@ def predict():
                            uploaded_image=img_path,
                            heatmap_image=heatmap_path)
 
-# 🟡 For local development only
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
-# ✅ For Vercel (WSGI entry point)
-def handler(environ, start_response):
-    return app.wsgi_app(environ, start_response)
+🟡 For local development only
+if __name__ == '__main__':
+    app.run(debug=True)
