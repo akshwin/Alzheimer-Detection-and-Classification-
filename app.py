@@ -39,6 +39,6 @@ def predict():
                            uploaded_image=img_path,
                            heatmap_image=heatmap_path)
 
-🟡 For local development only
+ #For local development only
 if __name__ == '__main__':
     app.run(debug=True)
