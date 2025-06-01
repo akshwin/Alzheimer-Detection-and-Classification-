@@ -5,8 +5,13 @@ import numpy as np
 from utils import preprocess_image, make_gradcam_heatmap, overlay_heatmap
 import uuid
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+# Create upload folder if it doesn't exist
+UPLOAD_FOLDER = 'static/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app = Flask(__name__, static_url_path='/static')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 model = load_model('model.h5')
 CLASS_NAMES = ['Mild Demented', 'Moderate Demented', 'Non Demented', 'Very Mild Demented']
