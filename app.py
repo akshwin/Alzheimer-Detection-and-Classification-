@@ -1,49 +1,48 @@
-from flask import Flask, render_template, request
-from keras.models import load_model
 import os
-import numpy as np
-from utils import preprocess_image, make_gradcam_heatmap, overlay_heatmap
+from flask import Flask, render_template, request, redirect, url_for
+from werkzeug.utils import secure_filename
 import uuid
+import tensorflow as tf
+import numpy as np
+from PIL import Image
 
-
-# Create upload folder if it doesn't exist
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-app = Flask(__name__, static_url_path='/static')
+app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-model = load_model('model.h5')
-CLASS_NAMES = ['Mild Demented', 'Moderate Demented', 'Non Demented', 'Very Mild Demented']
-LAST_CONV_LAYER_NAME = 'conv3'  # Make sure this layer exists in your model
+# Load your model
+model = tf.keras.models.load_model('model.h5')
+
+class_names = ['glioma', 'meningioma', 'no tumor', 'pituitary']
 
 @app.route('/')
-def index():
+def home():
     return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if 'image' not in request.files:
-        return "No file uploaded", 400
-    file = request.files['image']
+    if 'file' not in request.files:
+        return 'No file part'
+    file = request.files['file']
     if file.filename == '':
-        return "Empty file", 400
+        return 'No selected file'
+    if file:
+        filename = secure_filename(str(uuid.uuid4()) + ".png")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
 
-    img_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{uuid.uuid4()}.png")
-    file.save(img_path)
+        # Image preprocessing
+        img = Image.open(filepath).convert('RGB')
+        img = img.resize((224, 224))
+        img_array = np.expand_dims(np.array(img) / 255.0, axis=0)
 
-    preprocessed = preprocess_image(img_path)
-    prediction = model.predict(preprocessed)
-    pred_class = CLASS_NAMES[np.argmax(prediction)]
+        prediction = model.predict(img_array)
+        predicted_class = class_names[np.argmax(prediction)]
 
-    heatmap = make_gradcam_heatmap(preprocessed, model, LAST_CONV_LAYER_NAME)
-    heatmap_path = overlay_heatmap(img_path, heatmap)
+        return render_template('result.html', prediction=predicted_class, image_path=filepath)
+    return redirect(url_for('home'))
 
-    return render_template('index.html',
-                           prediction=pred_class,
-                           uploaded_image=img_path,
-                           heatmap_image=heatmap_path)
-
- #For local development only
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=True)
