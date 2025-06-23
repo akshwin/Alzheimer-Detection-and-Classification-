@@ -1,3 +1,0 @@
-# Alzheimer-Detection-and-Classification-
-
-
