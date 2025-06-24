@@ -77,19 +77,13 @@ with st.sidebar:
     - 🟡 Very Mild Demented  
     - 🟠 Mild Demented  
     - 🔴 Moderate Demented
-
     ---
     **How to use:**
     1. Upload a brain MRI image (JPG/PNG).
     2. The model will predict the stage.
     3. A Grad-CAM heatmap will be generated to visualize important regions.
-
     ---
-    **What is Grad-CAM?**  
-    Grad-CAM highlights the parts of the brain image that were most important for the model's prediction. This increases **transparency** and helps in **interpretability**.
-
-    ---
-    📩 *For academic or medical collaborations, contact: akshwint.2003@gmail.com*
+    📩 *For collaborations, contact: akshwint.2003@gmail.com*
     """)
 
 # ---- Main UI ---- #
@@ -121,7 +115,7 @@ if uploaded_file:
 
         st.markdown("---")
         st.markdown(
-            f"<div style='text-align:center; font-size:24px; font-weight:bold; color:#1ABC9C;'>🧬 Predicted Stage: <span style='color:#2C3E50;'>{pred_class}</span></div>",
+            f"<div style='text-align:center; font-size:24px; font-weight:bold; color:#1ABC9C;'>🧬 Predicted Stage: <span style='color:white;'>{pred_class}</span></div>",
             unsafe_allow_html=True
         )
 
