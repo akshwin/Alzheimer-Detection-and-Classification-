@@ -135,9 +135,9 @@ if uploaded_file or use_sample:
         # Display side-by-side images: Uploaded Left, Heatmap Right
         col_left, col_right = st.columns(2)
         with col_left:
-            st.image(img_path, caption="🧾 Uploaded MRI", use_column_width=True)
+            st.image(img_path, caption="🧾 Uploaded MRI", use_container_width=True)
         with col_right:
-            st.image(heatmap_path, caption="🔥 Grad-CAM Heatmap", use_column_width=True)
+            st.image(heatmap_path, caption="🔥 Grad-CAM Heatmap", use_container_width=True)
 
         # Predicted stage
         st.markdown("---")
