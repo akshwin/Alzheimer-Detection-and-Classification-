@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Set page config FIRST
-st.set_page_config(page_title="Alzheimer's MRI Classifier")
+st.set_page_config(page_title="NeuroAlz AI", layout="centered", page_icon="🧠")
 
 import numpy as np
 import tensorflow as tf
@@ -14,9 +14,13 @@ import matplotlib.pyplot as plt
 
 # ---- Constants ---- #
 CLASS_NAMES = ['Mild Demented', 'Moderate Demented', 'Non Demented', 'Very Mild Demented']
-LAST_CONV_LAYER_NAME = 'conv3'
-UPLOAD_FOLDER = 'static/uploads'
+LAST_CONV_LAYER_NAME = 'conv3'  # Update this to match your model's last conv layer
+
+# Folders
+UPLOAD_FOLDER = 'static/upload'
+HEATMAP_FOLDER = 'static/grad'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(HEATMAP_FOLDER, exist_ok=True)
 
 # ---- Load model ---- #
 @st.cache_resource
@@ -62,43 +66,64 @@ def overlay_heatmap(image_path, heatmap):
     ax.imshow(heatmap_resized, cmap='jet', alpha=0.4)
     ax.axis('off')
 
-    output_path = os.path.join(UPLOAD_FOLDER, f"heatmap_{uuid.uuid4()}.png")
+    output_path = os.path.join(HEATMAP_FOLDER, f"heatmap_{uuid.uuid4()}.png")
     fig.savefig(output_path, bbox_inches='tight', pad_inches=0)
     plt.close(fig)
     return output_path
 
 # ---- Sidebar ---- #
 with st.sidebar:
-    st.title("🧠 About the App")
+    st.markdown("## 🧠 NeuroAlz AI ")
     st.markdown("""
-    This application uses a **Deep Learning model** to classify brain MRI scans into four stages of **Alzheimer's Disease**:
-    
-    - 🟢 Non Demented  
-    - 🟡 Very Mild Demented  
-    - 🟠 Mild Demented  
-    - 🔴 Moderate Demented
-    ---
-    **How to use:**
-    1. Upload a brain MRI image (JPG/PNG).
-    2. The model will predict the stage.
-    3. A Grad-CAM heatmap will be generated to visualize important regions.
-    ---
-    📩 *For collaborations, contact: akshwint.2003@gmail.com*
+    This application uses a **deep learning model** to classify brain MRI scans into four stages of **Alzheimer's Disease**  
+    using **Convolutional Neural Networks (CNNs)** and **Grad-CAM** heatmaps for interpretability.
     """)
 
+    with st.expander("🔍 Model Details"):
+        st.markdown("""
+        - **Architecture Used**: Custom CNN  
+        - **Input Shape**: Grayscale 128x128  
+        - **Training**: On Alzheimer's MRI dataset  
+        - **Explainability**: Grad-CAM heatmaps show activated regions
+        """)
+
+    with st.expander("📂 Classes Detected"):
+        st.markdown("""
+        - 🔴 **Moderate Demented**  
+        - 🟠 **Mild Demented**  
+        - 🟡 **Very Mild Demented**  
+        - 🟢 **Non Demented**
+        """)
+
+    with st.expander("📁 Dataset Info"):
+        st.markdown("""
+        - Real MRI brain scans  
+        - Open-source dataset (Alzheimer's Dataset on Kaggle)  
+        - Resized to 128x128 pixels and converted to grayscale
+        """)
+
+    st.markdown("---")
+    st.markdown("👨‍💻 Developed by Akshwin T")
+    st.markdown("📬 Contact: [akshwint.2003@gmail.com](mailto:akshwint.2003@gmail.com)")
+
 # ---- Main UI ---- #
-st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🧠 Alzheimer's Stage Detection from MRI</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #2C3E50;'>🧠 NeuroAlz-AI : An Alzheimer's Stage Classifier </h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'>Upload an MRI brain scan to classify the Alzheimer's stage and see the Grad-CAM heatmap.</p>", unsafe_allow_html=True)
 st.markdown("---")
 
+# Upload and Sample Image Button
 uploaded_file = st.file_uploader("📤 Upload an MRI Image (JPG/PNG)", type=["png", "jpg", "jpeg"])
+use_sample = st.button("🖼️ Use Sample Image")
 
-if uploaded_file:
+if uploaded_file or use_sample:
     try:
-        temp_filename = f"{uuid.uuid4()}.png"
-        img_path = os.path.join(UPLOAD_FOLDER, temp_filename)
-        with open(img_path, "wb") as f:
-            f.write(uploaded_file.read())
+        if use_sample:
+            img_path = os.path.join("upload_image", "sample.png")  # sample image from upload_image/
+        else:
+            temp_filename = f"{uuid.uuid4()}.png"
+            img_path = os.path.join(UPLOAD_FOLDER, temp_filename)
+            with open(img_path, "wb") as f:
+                f.write(uploaded_file.read())
 
         with st.spinner("🔎 Analyzing..."):
             preprocessed = preprocess_image(img_path)
@@ -107,12 +132,14 @@ if uploaded_file:
             heatmap = make_gradcam_heatmap(preprocessed, model, LAST_CONV_LAYER_NAME)
             heatmap_path = overlay_heatmap(img_path, heatmap)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.image(img_path, caption="🧾 Uploaded MRI", use_container_width=True)
-        with col2:
+        # Display side-by-side images: Uploaded Left, Heatmap Right
+        col_left, col_right = st.columns(2)
+        with col_left:
+            st.image(img_path, caption="🧾 Uploaded MRI", use_column_width=True)
+        with col_right:
             st.image(heatmap_path, caption="🔥 Grad-CAM Heatmap", use_column_width=True)
 
+        # Predicted stage
         st.markdown("---")
         st.markdown(
             f"<div style='text-align:center; font-size:24px; font-weight:bold; color:#1ABC9C;'>🧬 Predicted Stage: <span style='color:white;'>{pred_class}</span></div>",
