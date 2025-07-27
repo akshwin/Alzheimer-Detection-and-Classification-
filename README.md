@@ -81,12 +81,6 @@ streamlit run app.py
 
 ---
 
-## 📸 Screenshots
-
-<img src="static/sample_ui.png" width="700"/>
-
----
-
 ## 📬 Contact
 
 * Author: [Akshwin T](https://github.com/akshwin01)
